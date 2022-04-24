@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gx.mapper.EmployeeMapper">
+    <!-- 查询机构 -->
+    <resultMap id="FrameworkMap" type="com.gx.utils.SelectVo">
+        <result column="organizationID" jdbcType="INTEGER" property="id" />
+        <result column="organizationName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectFramework" resultMap="FrameworkMap">
+		SELECT * FROM tb_organization
+  	</select>
+
+    <!-- 查询角色 -->
+    <resultMap id="RoleMap" type="com.gx.utils.SelectVo">
+        <result column="roleID" jdbcType="INTEGER" property="id" />
+        <result column="roleName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectRole" resultMap="RoleMap">
+		SELECT * FROM tb_role
+		ORDER BY tb_role.roleSort
+  	</select>
+
+    <!-- 查询部门 -->
+    <resultMap id="DepartmentMap" type="com.gx.utils.SelectVo">
+        <result column="departmentID" jdbcType="INTEGER" property="id" />
+        <result column="departmentName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectDepartment" resultMap="DepartmentMap">
+		SELECT * FROM tb_department
+		<where>
+            <if test="parentdepartmentid == 0 ">
+                and tb_department.parentdepartmentID=#{parentdepartmentid}
+            </if>
+        </where>
+  	</select>
+
+    <!--部门树形下拉框-->
+    <resultMap id="TreeDepartmentMap" type="com.gx.utils.TreeResult">
+        <result column="departmentID" jdbcType="VARCHAR" property="value" />
+        <result column="parentdepartmentID" jdbcType="VARCHAR" property="pvalue" />
+        <result column="departmentName" jdbcType="VARCHAR" property="name" />
+    </resultMap>
+    <select id="TreeDepartment" resultMap="TreeDepartmentMap">
+        SELECT * FROM tb_department
+    </select>
+
+    <!-- 查询驾校 -->
+    <select id="selectSchool" resultType="com.gx.pojo.TbDepartment">
+		SELECT * FROM tb_department
+		where tb_department.departmentID=#{parentID}
+  	</select>
+
+    <!-- 查询科目 -->
+    <resultMap id="SubjectsMap" type="com.gx.utils.SelectVo">
+        <result column="subjectID" jdbcType="INTEGER" property="value" />
+        <result column="subjectName" jdbcType="VARCHAR" property="name" />
+    </resultMap>
+    <select id="selectSubjects" resultMap="SubjectsMap">
+		SELECT * FROM tb_subjects
+  	</select>
+
+    <!-- 查询车辆 -->
+    <resultMap id="CarMap" type="com.gx.utils.SelectVo">
+        <result column="vehicleID" jdbcType="INTEGER" property="id" />
+        <result column="carNumber" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectCar" resultMap="CarMap">
+		SELECT * FROM tb_vehicle
+  	</select>
+
+    <!-- 查询训练场 -->
+    <resultMap id="TrainingMap" type="com.gx.utils.SelectVo">
+        <result column="trainingGroundID" jdbcType="INTEGER" property="id" />
+        <result column="trainingGroundName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectTraining" resultMap="TrainingMap">
+		SELECT * FROM tb_trainingGround
+  	</select>
+
+    <!-- 查询车型 -->
+    <resultMap id="ModelMap" type="com.gx.utils.SelectVo">
+        <result column="modelID" jdbcType="INTEGER" property="id" />
+        <result column="modelName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectModel" resultMap="ModelMap">
+		SELECT * FROM tb_model
+  	</select>
+
+    <!-- 查询员工 -->
+    <select id="selectEmployee" resultType="com.gx.pojo.EmployeeManage">
+		SELECT * FROM tb_employee
+		left join tb_user on tb_employee.userID = tb_user.userID
+        left join tb_registrationpoint on tb_employee.registrationPointID = tb_registrationpoint.registrationPointID
+        left join tb_department on tb_employee.departmentID = tb_department.departmentID
+        left join tb_role on tb_user.roleID = tb_role.roleID
+        left join tb_coach on tb_employee.employeeID = tb_coach.employeeID
+        left join tb_model on tb_coach.teachingmodelID = tb_model.modelID
+        left join tb_trainingground on tb_trainingground.trainingGroundID = tb_coach.subjectTwoTrainingID
+        left join tb_trainingground as three on three.trainingGroundID = tb_coach.subjectThreeTrainingID
+        left join tb_vehicle on tb_coach.vehicleID = tb_vehicle.vehicleID
+        <where>
+            <if test="Employeenumber != null and Employeenumber !='' ">
+                and (tb_employee.employeeName like concat('%',#{Employeenumber},'%')
+                or tb_employee.identityCard like concat('%',#{Employeenumber},'%')
+                or tb_employee.telephone like concat('%',#{Employeenumber},'%'))
+            </if>
+            <if test="Framework != null and Framework != 0">
+                and tb_department.parentdepartmentID=#{Framework}
+            </if>
+            <if test="Role != 0 and Role!=null">
+                and tb_user.roleID=#{Role}
+            </if>
+            <if test="Working != null">
+                and tb_employee.workingBit=#{Working}
+            </if>
+            <if test="Account != null">
+                <if test="Account == true">
+                    and tb_employee.userID !=0
+                </if>
+                <if test="Account == false">
+                    and tb_employee.userID =0
+                </if>
+            </if>
+            <if test="Employeetype != null">
+                and tb_employee.employeeType=#{Employeetype}
+            </if>
+        </where>
+        ORDER BY tb_employee.sorting
+  	</select>
+
+    <!--新增用户-->
+    <insert id="insertUser" parameterType="com.gx.pojo.EmployeeManage">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="userid">
+            select LAST_INSERT_ID() AS id
+        </selectKey>
+        insert into tb_user(roleID,userName,account,cipher,effectiveBit,concessional)
+        values(#{roleid},#{username},#{account},"123456",#{effectivebit},#{concessional})
+    </insert>
+
+    <!--新增员工-->
+    <insert id="insertEmployee" parameterType="com.gx.pojo.EmployeeManage">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="employeeid">
+            select LAST_INSERT_ID() AS id
+        </selectKey>
+        insert into tb_employee(userID,employeeGroupingID,registrationPointID,departmentID,employeeName,drivingmodelID,
+        sex,identityCard,birthday,telephone,photo,employeeType,position,entryTime,departureTime,laborStartTime,
+        laborEndTime,drivingNumbwe,initialDate,idCardAddress,location,sorting,workingBit,coachBit)
+
+        values (#{userid},#{employeegroupingid},#{registrationpointid},#{departmentid},#{employeename},#{drivingmodelid},
+        #{sex},#{identitycard},#{birthday},#{telephone},#{photo},#{employeetype},#{position},#{entrytime},#{departuretime},#{laborstarttime},
+        #{laborendtime},#{drivingnumbwe},#{initialdate},#{idcardaddress},#{location},#{sorting},#{workingbit},#{coachbit})
+    </insert>
+
+    <!--新增教练-->
+    <insert id="insertCoach"  parameterType="com.gx.pojo.EmployeeManage">
+        insert into tb_coach(employeeID,teachingmodelID,vehicleID,subjectTwoTrainingID,subjectThreeTrainingID,
+        subjects,coachtype,trainPeople,seniorityNumber,seniorityGrade,introduce,splitCarBit,appCarBit)
+
+        values (#{employeeid},#{teachingmodelid},#{vehicleid},#{subjecttwotrainingid},#{subjectthreetrainingid},
+        #{subjects},#{coachtype},#{trainpeople},#{senioritynumber},#{senioritygrade},#{introduce},#{splitcarbit},#{appcarbit})
+    </insert>
+
+    <!--回填员工数据-->
+    <select id="backfillEmployee" resultType="com.gx.pojo.EmployeeManage">
+        SELECT * FROM tb_employee
+        left join tb_user on tb_employee.userID = tb_user.userID
+        left join tb_coach on tb_employee.employeeID = tb_coach.employeeID
+        left join tb_department on tb_employee.departmentID = tb_department.departmentID
+        where tb_employee.employeeID=#{EmployeeID}
+    </select>
+
+    <!--修改用户-->
+    <update id="updateUser" parameterType="com.gx.pojo.EmployeeManage">
+        update tb_user set roleID=#{roleid},userName=#{username},account=#{account},cipher=#{cipher},effectiveBit=#{effectivebit},concessional=#{concessional}
+        where tb_user.userID = #{userid}
+    </update>
+
+    <!--修改员工-->
+    <update id="updateEmployee" parameterType="com.gx.pojo.EmployeeManage">
+        update tb_employee set userID=#{userid},employeeGroupingID=#{employeegroupingid},registrationPointID=#{registrationpointid},
+            departmentID=#{departmentid},employeeName=#{employeename},drivingmodelID=#{drivingmodelid},
+            sex=#{sex},identityCard=#{identitycard},birthday=#{birthday},telephone=#{telephone},photo=#{photo},employeeType=#{employeetype},
+            position=#{position},entryTime=#{entrytime},departureTime=#{departuretime},laborStartTime=#{laborstarttime},
+            laborEndTime=#{laborendtime},drivingNumbwe=#{drivingnumbwe},initialDate=#{initialdate},idCardAddress=#{idcardaddress},
+            location=#{location},sorting=#{sorting},workingBit=#{workingbit},coachBit=#{coachbit}
+        where tb_employee.employeeID=#{employeeid}
+    </update>
+
+    <!--修改教练-->
+    <update id="updateCoach"  parameterType="com.gx.pojo.EmployeeManage">
+        update tb_coach set employeeID=#{employeeid},teachingmodelID=#{teachingmodelid},vehicleID=#{vehicleid},
+            subjectTwoTrainingID=#{subjecttwotrainingid},subjectThreeTrainingID=#{subjectthreetrainingid},
+            subjects=#{subjects},coachtype=#{coachtype},trainPeople=#{trainpeople},
+            seniorityNumber=#{senioritynumber},seniorityGrade=#{senioritygrade},
+            introduce=#{introduce},splitCarBit=#{splitcarbit},appCarBit=#{appcarbit}
+		where tb_coach.coachID=#{coachid}
+    </update>
+    
+    <!--删除用户-->
+    <delete id="deleteUser" parameterType="java.lang.Integer">
+        delete from tb_user
+        where tb_user.userID=#{userID}
+    </delete>
+
+    <!--删除员工-->
+    <delete id="deleteEmployee" parameterType="java.lang.Integer">
+        delete from tb_employee
+        where tb_employee.employeeID=#{employeeID}
+    </delete>
+
+    <!--删除教练-->
+    <delete id="deleteCoach" parameterType="java.lang.Integer">
+        delete from tb_coach
+        where tb_coach.coachID=#{coachID}
+    </delete>
+
+    <!--部门查询-->
+    <select id="tableDepartment" resultType="com.gx.pojo.TbDepartment">
+        SELECT * FROM tb_department
+        <where>
+            <if test="DepartmentID !=0">
+               and tb_department.departmentID = #{DepartmentID}
+            </if>
+            <if test="parentDepartmentID !=0">
+                and tb_department.departmentID = #{parentDepartmentID}
+            </if>
+        </where>
+        ORDER BY tb_department.sequence
+    </select>
+
+    <!--部门新增-->
+    <insert id="insertDepartment">
+        insert into tb_department(parentdepartmentID,departmentName,linkman,departmentphone,sequence)
+        values(#{DepartmentID},#{Name},#{Linkman},#{Phone},#{Sequence})
+    </insert>
+
+    <!--部门修改-->
+    <update id="updateDepartment">
+        update tb_department set departmentName=#{Name},
+        linkman=#{Linkman},departmentphone=#{Phone},sequence=#{Sequence}
+        where tb_department.departmentID = #{DepartmentID}
+    </update>
+
+    <!--部门查询是否有子数据-->
+    <select id="hasSonDepartment" resultType="java.lang.Integer">
+        SELECT count(*) FROM tb_department
+        where tb_department.parentdepartmentID = #{DepartmentID}
+    </select>
+
+    <!--部门删除-->
+    <delete id="deleteDepartment" parameterType="com.gx.pojo.TbDepartment">
+        delete from tb_department
+        where tb_department.departmentID = #{DepartmentID}
+    </delete>
+
+    <!--角色查询-->
+    <select id="tableRole" resultType="com.gx.pojo.TbRole">
+        SELECT * FROM tb_role
+        <where>
+            <if test="RoleID !=0">
+                and tb_role.roleID = #{RoleID}
+            </if>
+            <if test="Rolename !='' and Rolename !=null">
+                and tb_role.roleName like concat('%',#{Rolename},'%')
+            </if>
+        </where>
+        ORDER BY tb_role.roleSort
+    </select>
+
+    <!--查询模块明细表-->
+    <select id="selectModuledetails" resultType="com.gx.pojo.TbJurisdictions">
+        SELECT * FROM tb_moduledetails
+    </select>
+
+    <!--角色新增-->
+    <insert id="insertRole" parameterType="com.gx.pojo.TbRole">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="roleid">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into tb_role(roleName,roleSort)
+        values(#{rolename},#{rolesort})
+    </insert>
+
+    <!--角色修改-->
+    <update id="updateRole" parameterType="com.gx.pojo.TbRole">
+        update tb_role set roleName=#{rolename},roleSort=#{rolesort}
+        where tb_role.roleID = #{roleid}
+    </update>
+
+    <!--角色查询是否有子数据-->
+    <select id="hasSonRole" resultType="java.lang.Integer">
+        SELECT count(*) FROM tb_user
+        where tb_user.roleID = #{RoleID}
+    </select>
+
+    <!--角色删除-->
+    <delete id="deleteRole">
+        delete from tb_role
+        where tb_role.roleID = #{RoleID}
+    </delete>
+
+    <!--模块查询-->
+    <select id="tablemodule" resultType="com.gx.pojo.TbJurisdictions">
+        SELECT tb_module.*,GROUP_CONCAT(tb_moduledetails.moduleDetailsID) moduleDetailsIDs,
+        GROUP_CONCAT(tb_moduledetailstype.moduleDetailsTypeID) typeIDs,GROUP_CONCAT(tb_moduledetailstype.moduleDetailsTypeName) typeNames,
+		GROUP_CONCAT(tb_jurisdictions.jurisdictionsID) jurisdictionsIDs,GROUP_CONCAT(tb_jurisdictions.usingBit) usingBits FROM tb_module
+        left join tb_moduledetails on tb_moduledetails.moduleID = tb_module.moduleID
+		left join tb_moduledetailstype on tb_moduledetails.moduleDetailsTypeID = tb_moduledetailstype.moduleDetailsTypeID
+        left join tb_jurisdictions on tb_jurisdictions.moduleDetailsID = tb_moduledetails.moduleDetailsID
+        left join tb_role on tb_role.roleID = tb_jurisdictions.roleID
+        where tb_jurisdictions.roleID = #{roleID}
+        GROUP BY tb_module.ModuleName
+        ORDER BY tb_module.moduleID
+    </select>
+
+    <!--新增权限表-->
+    <insert id="insertJurisdiction">
+        insert into tb_jurisdictions(roleID,moduleDetailsID,usingBit)
+        values(#{roleID},#{moduleDetailsID},-1)
+    </insert>
+
+    <!--修改权限表-->
+    <update id="updateJurisdiction">
+        update tb_jurisdictions set usingBit = usingBit * -1
+        where tb_jurisdictions.jurisdictionsID = #{jurisdictionsID}
+    </update>
+
+    <!--删除权限表-->
+    <delete id="deleteJurisdiction">
+        delete from tb_jurisdictions
+        where tb_jurisdictions.roleID = #{roleID}
+    </delete>
+</mapper>

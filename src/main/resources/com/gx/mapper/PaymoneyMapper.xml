@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gx.mapper.PaymoneyMapper">
+
+
+
+    <!--查询学员-->
+    <select id="SelectPaymoney" resultType="com.gx.pojo.TbPaymoney">
+
+		SELECT * FROM tb_application
+        left  join tb_employee      on tb_application.employeeID=tb_employee.employeeID
+
+        left  join tb_student      on  tb_application.studentID=tb_student.studentID
+        left  join  tb_paymoney  on tb_student.studentID=tb_paymoney.studentID
+		left  join tb_registration on tb_student.registrationID=tb_registration.registrationID
+		left  join tb_model        on tb_registration.modelID=tb_model.modelID
+		left  join tb_registrationpoint on tb_registration.registrationPointID=tb_registrationpoint.registrationPointID
+        left  join tb_referral     on tb_registration.referralID=tb_registration.referralID
+		left  join tb_class        on tb_student.classID = tb_class.classID
+		left  join tb_organization  on tb_class.organizationID=tb_organization.organizationID
+		left  join tb_cardtype     on tb_student.cardTypeID = tb_cardtype.cardTypeID
+		left  join tb_studentgroup on tb_student.studentGroupID =tb_studentgroup.studentGroupID
+
+  	</select>
+
+
+
+</mapper>

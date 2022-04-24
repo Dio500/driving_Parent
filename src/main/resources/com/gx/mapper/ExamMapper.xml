@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gx.mapper.ExamMapper">
+
+    <!--考前流程查询-->
+    <select id="selectexam" resultType="com.gx.pojo.ExamManage">
+        SELECT *,(select CONCAT(tb_model.modelName,"-",tb_class.className)) as modelclass FROM tb_student
+        left join tb_model on tb_model.modelID = tb_student.modelID
+        left join tb_class on tb_student.classID = tb_class.classID
+        left join tb_department    on tb_class.departmentID = tb_department.departmentID
+        left join tb_registration  on tb_student.registrationID = tb_registration.registrationID
+        left join tb_registrationpoint on tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+        left join tb_health     on tb_health.healthID = tb_student.healthID
+        left join tb_interview  on tb_interview.interviewID = tb_student.interviewID
+        left join tb_acceptance on tb_acceptance.acceptanceID = tb_student.acceptanceID
+        <where>
+            and tb_student.studyState = "报名"
+            <if test="SignUpName != null and SignUpName != '' ">
+                and (tb_student.name like concat('%',#{SignUpName},'%')
+                or tb_student.identityCard like concat('%',#{SignUpName},'%')
+                or tb_student.phoneOne like concat('%',#{SignUpName},'%'))
+            </if>
+            <if test="SignBegin != null and SignFinish != null">
+                and tb_registration.registrationTime between #{SignBegin} and #{SignFinish}
+            </if>
+            <if test="NamePointID != 0">
+                and tb_registrationpoint.registrationPointID = #{NamePointID}
+            </if>
+            <if test="DepartmentID != 0">
+                and tb_department.departmentID = #{DepartmentID}
+            </if>
+            <if test="ModelID != 0">
+                and tb_model.modelID = #{ModelID}
+            </if>
+            <if test="ClassID != 0">
+                and tb_class.classID = #{ClassID}
+            </if>
+            <if test="DownExamin == '体检'">
+                <if test="ExaminState == true">
+                    and tb_student.healthID > 0
+                    <if test="Examination !='' and Examination == 'true'">
+                        and tb_health.healthBit = 1
+                    </if>
+                    <if test="Examination !='' and Examination == 'false'">
+                        and tb_health.healthBit = 0
+                    </if>
+                    <if test="ProBegin != null and ProFinish != null">
+                        and tb_health.healthTime between #{ProBegin} and #{ProFinish}
+                    </if>
+                </if>
+                <if test="ExaminState == false">
+                    and tb_student.healthID = 0
+                </if>
+            </if>
+            <if test="DownExamin == '面签'">
+                and tb_student.healthID > 0
+                <if test="ExaminState == true">
+                    and tb_student.interviewID > 0
+                    <if test="Examination !='' and Examination == 'true'">
+                        and tb_interview.interviewBit = 1
+                    </if>
+                    <if test="Examination !='' and Examination == 'false'">
+                        and tb_interview.interviewBit = 0
+                    </if>
+                    <if test="ProBegin != null and ProFinish != null">
+                        and tb_interview.interviewTime between #{ProBegin} and #{ProFinish}
+                    </if>
+                </if>
+                <if test="ExaminState == false">
+                    and tb_student.interviewID = 0
+                </if>
+            </if>
+            <if test="DownExamin == '受理'">
+                and tb_student.interviewID > 0
+                <if test="ExaminState == true">
+                    and tb_student.acceptanceID > 0
+                    <if test="Examination !='' and Examination == 'true'">
+                        and tb_acceptance.acceptanceBit = 1
+                    </if>
+                    <if test="Examination !='' and Examination == 'false'">
+                        and tb_acceptance.acceptanceBit = 0
+                    </if>
+                    <if test="ProBegin != null and ProFinish != null">
+                        and tb_acceptance.acceptanceTime between #{ProBegin} and #{ProFinish}
+                    </if>
+                </if>
+                <if test="ExaminState == false">
+                    and tb_student.acceptanceID = 0
+                </if>
+            </if>
+        </where>
+        ORDER BY tb_student.studentID
+    </select>
+
+    <!--新增体检表-->
+    <insert id="insertHealth" parameterType="com.gx.pojo.ExamManage">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="healthid"> select LAST_INSERT_ID() </selectKey>
+        insert into tb_health(healthTime,healthRemarks,healthBit)
+        values (#{healthtime},#{healthremarks},#{healthbit})
+    </insert>
+
+    <!--新增面签表-->
+    <insert id="insertInterview" parameterType="com.gx.pojo.ExamManage">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="interviewid"> select LAST_INSERT_ID() </selectKey>
+        insert into tb_interview(interviewTime,interviewRemarks,interviewBit)
+        values (#{interviewtime},#{interviewremarks},#{interviewbit})
+    </insert>
+
+    <!--新增受理表-->
+    <insert id="insertAcceptance" parameterType="com.gx.pojo.ExamManage">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="acceptanceid"> select LAST_INSERT_ID() </selectKey>
+        insert into tb_acceptance(acceptanceTime,acceptanceRemarks,acceptanceBit)
+        values (#{acceptancetime},#{acceptanceremarks},#{acceptancebit})
+    </insert>
+
+    <!--修改学生表-->
+    <update id="updateStudentExam" parameterType="com.gx.pojo.ExamManage">
+        update tb_student
+        <set>
+            <if test="healthid != null"> healthID=#{healthid}, </if>
+            <if test="interviewid != null"> interviewID=#{interviewid}, </if>
+            <if test="acceptanceid != null"> acceptanceID=#{acceptanceid}, </if>
+        </set>
+        where tb_student.studentID=#{studentid}
+    </update>
+
+    <!--修改体检表-->
+    <update id="updateHealth" parameterType="com.gx.pojo.ExamManage">
+        update tb_health set healthTime=#{healthtime},healthRemarks=#{healthremarks},healthBit=#{healthbit}
+        where tb_health.healthID=#{healthid}
+    </update>
+
+    <!--修改面签表-->
+    <update id="updateInterview" parameterType="com.gx.pojo.ExamManage">
+        update tb_interview set interviewTime=#{interviewtime},interviewRemarks=#{interviewremarks},interviewBit=#{interviewbit}
+        where tb_interview.interviewID=#{interviewid}
+    </update>
+
+    <!--修改受理表-->
+    <update id="updateAcceptance" parameterType="com.gx.pojo.ExamManage">
+        update tb_acceptance set acceptanceTime=#{acceptancetime},acceptanceRemarks=#{acceptanceremarks},acceptanceBit=#{acceptancebit}
+        where tb_acceptance.acceptanceID=#{acceptanceid}
+    </update>
+
+    <!--删除体检表-->
+    <delete id="deleteHealth" parameterType="java.lang.Integer">
+        delete from tb_health
+        where tb_health.healthID=#{healthID}
+    </delete>
+
+    <!--删除面签表-->
+    <delete id="deleteInterview" parameterType="java.lang.Integer">
+        delete from tb_interview
+        where tb_interview.interviewID=#{interviewID}
+    </delete>
+
+    <!--删除受理表-->
+    <delete id="deleteAcceptance" parameterType="java.lang.Integer">
+        delete from tb_acceptance
+        where tb_acceptance.acceptanceID=#{acceptanceID}
+    </delete>
+    
+    <!--==========================考试管理===========================-->
+
+    <!--待合格：
+            科一：去除科一合格的数据
+            科二：科一分数最大值>=90，并且去除科二合格的数据
+            科三：科一合格，并且去除科三合格的数据
+            科四：科三合格，去除科四合格、科二不合格的数据
+        合格：
+            分数合格，学生id分组查询
+    -->
+    <!--科目待合格、合格-->
+    <select id="selectTestDetail" resultType="com.gx.pojo.ExamManage">
+        SELECT tb_student.*,tb_acceptance.acceptanceBit,tb_department.departmentID,tb_department.departmentName,
+        tb_registration.*,tb_registrationpoint.registrationPointName,(select CONCAT(tb_model.modelName,"-",tb_class.className)) as modelclass
+        FROM tb_testdetail
+        LEFT JOIN tb_subjects ON tb_subjects.subjectID = tb_testdetail.subjectID
+        LEFT JOIN tb_testroom ON tb_testroom.testRoomID = tb_testdetail.testRoomID
+        RIGHT JOIN tb_student ON tb_student.studentID = tb_testdetail.studentID
+        LEFT JOIN tb_acceptance ON tb_acceptance.acceptanceID = tb_student.acceptanceID
+        LEFT JOIN tb_model ON tb_model.modelID = tb_student.modelID
+        LEFT JOIN tb_class ON tb_student.classID = tb_class.classID
+        LEFT JOIN tb_department   ON tb_class.departmentID = tb_department.departmentID
+        LEFT JOIN tb_registration ON tb_student.registrationID = tb_registration.registrationID
+        LEFT JOIN tb_registrationpoint ON tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+        <where>
+            and tb_acceptance.acceptanceBit
+            <if test="ExaminState == true">
+                and tb_testdetail.subjectID = ${SubjectID}
+                and tb_testdetail.subjectResult >= 80
+                <if test="SubjectID != 2">
+                    and tb_testdetail.subjectResult >= 90
+                </if>
+            </if>
+            <if test="ExaminState == false">
+                <if test="SubjectID == 2 || SubjectID == 3">
+                    and tb_testdetail.subjectID = 1
+                </if>
+                <if test="SubjectID == 4">
+                    and tb_testdetail.subjectID = 3
+                </if>
+                AND tb_student.studentID NOT IN
+                (
+                    SELECT tb_testdetail.studentID FROM  tb_testdetail
+                    WHERE tb_testdetail.subjectID = ${SubjectID}
+                    GROUP BY tb_testdetail.studentID,tb_testdetail.subjectID
+                    <if test="SubjectID == 2">
+                        HAVING max(subjectResult) >= 80
+                    </if>
+                    <if test="SubjectID != 2">
+                        HAVING max(subjectResult) >= 90
+                        <if test="SubjectID == 4">
+                            AND tb_student.studentID NOT IN
+                            (
+                            SELECT tb_testdetail.studentID FROM  tb_testdetail
+                            WHERE tb_testdetail.subjectID = 2
+                            GROUP BY tb_testdetail.studentID,tb_testdetail.subjectID
+                            HAVING !max(subjectResult) >=80
+                            )
+                        </if>
+                    </if>
+                )
+            </if>
+            <if test="SignUpName != null and SignUpName != '' ">
+                and (tb_student.name like concat('%',#{SignUpName},'%')
+                or tb_student.identityCard like concat('%',#{SignUpName},'%')
+                or tb_student.phoneOne like concat('%',#{SignUpName},'%'))
+            </if>
+            <if test="SignBegin != null and SignFinish != null">
+                and tb_registration.registrationTime between #{SignBegin} and #{SignFinish}
+            </if>
+            <if test="NamePointID != 0">
+                and tb_registrationpoint.registrationPointID = #{NamePointID}
+            </if>
+            <if test="DepartmentID != 0">
+                and tb_department.departmentID = #{DepartmentID}
+            </if>
+            <if test="ModelID != 0">
+                and tb_model.modelID = #{ModelID}
+            </if>
+            <if test="ClassID != 0">
+                and tb_class.classID = #{ClassID}
+            </if>
+        </where>
+        GROUP BY tb_student.studentID
+        <if test="ExaminState == false and SubjectID != 1">
+            HAVING max(subjectResult) >= 90
+        </if>
+    </select>
+
+    <!--查询该学生有无该科目的考试记录-->
+    <select id="selectTestRecord" resultType="com.gx.pojo.ExamManage">
+        select testDetailID from tb_testdetail
+        where studentID = ${studentID} AND subjectID = ${subjectID}
+        LIMIT 0,1
+    </select>
+
+    <!--取考试时间最后的一条数据-->
+    <select id="appointmentTest" resultType="com.gx.pojo.ExamManage">
+        SELECT * FROM tb_testdetail a
+        <where>
+            a.subjectID = ${subjectID} AND a.studentID = ${studentID}
+            <if test="Examination != 'all'">
+                <if test="Examination == ''">
+                    AND (a.testState=2 || a.testState=4)
+                </if>
+                <if test="Examination != ''">
+                    AND a.testState=${Examination}
+                </if>
+            </if>
+            <if test="TestBegin != null and TestFinish != null">
+                AND a.testTime BETWEEN #{TestBegin} AND #{TestFinish}
+            </if>
+            <if test="BookingBegin != null and BookingFinish != null">
+                AND a.testTime BETWEEN #{BookingBegin} AND #{BookingFinish}
+            </if>
+        </where>
+        AND testTime =(
+        SELECT MAX(testTime)
+        FROM tb_testdetail b
+        WHERE a.studentID =b.studentID AND a.subjectID = b.subjectID)
+    </select>
+
+    <!--回填预约学员信息-->
+    <select id="backFillAppointment" resultType="com.gx.pojo.ExamManage">
+        SELECT tb_student.studentID,tb_student.name,tb_student.identityCard,tb_student.phoneOne FROM tb_student
+        WHERE tb_student.studentID = #{studentID}
+    </select>
+
+    <!--新增预约-->
+    <insert id="addAppointment" parameterType="com.gx.pojo.ExamManage">
+        insert into tb_testdetail(studentID,subjectID,testRoomID,testTime,appointmentTime,testState)
+        values (#{studentid},#{subjectid},#{testroomid},#{testtime},now(),0)
+    </insert>
+
+    <!--取消预约-->
+    <delete id="removalAppointment" parameterType="java.lang.Integer">
+        delete from tb_testdetail
+        where tb_testdetail.testdetailID = ${testdetailID}
+    </delete>
+
+    <!--修改为预约成功、失败-->
+    <update id="updateAppointment" parameterType="java.lang.Integer">
+        update tb_testdetail set tb_testdetail.testState = ${testStatus}
+        where tb_testdetail.testdetailID = ${testdetailID}
+    </update>
+
+    <!-- 科目下拉框 -->
+    <resultMap id="subject" type="com.gx.utils.SelectVo">
+        <result column="subjectID" jdbcType="INTEGER" property="id" />
+        <result column="subjectName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectSubject" resultMap="subject">
+        SELECT * FROM tb_subjects
+    </select>
+
+    <!-- 考场下拉框 -->
+    <resultMap id="testRoom" type="com.gx.utils.SelectVo">
+        <result column="testRoomID" jdbcType="INTEGER" property="id" />
+        <result column="testRoomName" jdbcType="VARCHAR" property="text" />
+    </resultMap>
+    <select id="selectTestRoom" resultMap="testRoom">
+        SELECT * FROM tb_testroom
+        LEFT JOIN tb_testroomsubjects ON tb_testroomsubjects.testRoomID = tb_testroom.testRoomID
+        LEFT JOIN tb_subjects ON tb_subjects.subjectID = tb_testroomsubjects.subjectID
+        WHERE tb_testroomsubjects.subjectID=${subjectID}
+    </select>
+
+    <!--预约、成绩详情  <(&lt;) >(&gt;) &(&amp;) '(&apos;) "(&quot;)-->
+    <select id="selectAchievement" resultType="com.gx.pojo.ExamManage">
+        SELECT tb_student.Name,tb_subjects.subjectName,tb_testdetail.*,tb_testroom.* FROM tb_testdetail
+        LEFT JOIN tb_subjects ON tb_subjects.subjectID = tb_testdetail.subjectID
+        LEFT JOIN tb_testroom ON tb_testroom.testRoomID = tb_testdetail.testRoomID
+        LEFT JOIN tb_student ON tb_student.studentID = tb_testdetail.studentID
+        <where>
+            AND tb_testdetail.studentID = ${studentID}
+            <if test="testStatus == true">
+                AND tb_testdetail.testState > 2
+            </if>
+            <if test="testStatus == false">
+                AND tb_testdetail.testState &lt; 3
+            </if>
+        </where>
+        HAVING tb_testdetail.testTime
+        ORDER BY tb_testdetail.subjectID
+    </select>
+
+    <!--预约、考试记录-->
+    <select id="selectBooking" resultType="com.gx.pojo.ExamManage">
+        SELECT tb_student.studentID,tb_student.name,tb_student.sex,tb_student.identityCard,tb_student.phoneOne,tb_student.employeeID,
+        a.*,tb_model.*,tb_class.*,tb_testroom.*,tb_subjects.*,tb_registrationpoint.*,tb_department.*,tb_employee.employeeName,
+        (SELECT CONCAT(tb_model.modelName,"-",tb_class.className)) AS modelclass,
+        (SELECT COUNT(*) FROM tb_testdetail WHERE studentID=a.studentID AND subjectID=a.subjectID AND testState >2) testnumber
+        FROM tb_testdetail a
+        LEFT JOIN tb_student ON tb_student.studentID = a.studentID
+        LEFT JOIN tb_registration ON tb_registration.registrationID = tb_student.registrationID
+        LEFT JOIN tb_registrationpoint ON tb_registrationpoint.registrationPointID = tb_registration.registrationPointID
+        LEFT JOIN tb_subjects ON tb_subjects.subjectID = a.subjectID
+        LEFT JOIN tb_testroom ON tb_testroom.testRoomID = a.testRoomID
+        LEFT JOIN tb_employee ON tb_employee.employeeID = tb_student.employeeID
+        LEFT JOIN tb_model ON tb_model.modelID = tb_student.modelID
+        LEFT JOIN tb_class ON tb_class.classID = tb_student.classID
+        LEFT JOIN tb_department ON tb_class.departmentID = tb_department.departmentID
+        <where>
+            a.subjectID = ${SubjectID}
+            <if test="SignUpName != null and SignUpName != '' ">
+                AND (tb_student.name LIKE concat('%',#{SignUpName},'%')
+                OR tb_student.identityCard LIKE concat('%',#{SignUpName},'%')
+                OR tb_student.phoneOne LIKE concat('%',#{SignUpName},'%')
+                OR tb_student.phoneTwo LIKE concat('%',#{SignUpName},'%'))
+            </if>
+            <if test="TestRoomID != 0">
+                AND a.testRoomID = #{TestRoomID}
+            </if>
+            <if test="ModelID != 0">
+                AND tb_model = #{ModelID}
+            </if>
+            <if test="ClassID != 0">
+                AND tb_class = #{ClassID}
+            </if>
+            <if test="EmployeeID != 0">
+                AND tb_student.employeeID =#{EmployeeID}
+            </if>
+            <if test="NamePointID != 0">
+                AND tb_registrationpoint.RegistrationPointID = #{NamePointID}
+            </if>
+            <if test="DepartmentID != 0">
+                AND  tb_department.departmentID=#{DepartmentID}
+            </if>
+            <if test="TestBegin != null and TestFinish != null">
+                AND a.testTime BETWEEN #{TestBegin} AND #{TestFinish}
+            </if>
+            <if test="ExaminState == false">
+                AND a.testState=1
+            </if>
+            <if test="ExaminState == true">
+                AND a.testState=#{Examination}
+            </if>
+        </where>
+        AND testTime =(SELECT MAX(testTime) FROM tb_testdetail b
+            WHERE a.studentID =b.studentID AND a.subjectID = b.subjectID)
+        ORDER BY a.testTime DESC
+    </select>
+
+    <!--考试预约回填-->
+    <select id="backFillTestDetail" resultType="com.gx.pojo.ExamManage">
+        SELECT tb_student.Name,tb_student.identityCard,tb_student.phoneOne,
+        tb_subjects.subjectName,tb_testdetail.*,tb_testroom.* FROM tb_testdetail
+        LEFT JOIN tb_subjects ON tb_subjects.subjectID = tb_testdetail.subjectID
+        LEFT JOIN tb_testroom ON tb_testroom.testRoomID = tb_testdetail.testRoomID
+        LEFT JOIN tb_student ON tb_student.studentID = tb_testdetail.studentID
+        WHERE tb_testdetail.testdetailID =#{TestDetailID}
+    </select>
+
+    <update id="updateTestResult">
+        update tb_testdetail set tb_testdetail.subjectResult=#{Result},tb_testdetail.testState=#{Teststate}
+        where tb_testdetail.testdetailID = ${TestDetailID}
+    </update>
+</mapper>

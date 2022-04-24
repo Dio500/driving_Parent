@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="driving_Parent">
+    <output-path>$PROJECT_DIR$/out/artifacts/driving_Parent</output-path>
+    <root id="root">
+      <element id="archive" name="driving_Parent.jar">
+        <element id="module-output" name="driving_Parent" />
+      </element>
+    </root>
+  </artifact>
+</component>

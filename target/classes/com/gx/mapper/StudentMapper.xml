@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gx.mapper.StudentMapper">
+
+	<!--招生来源（部门）-->
+	<resultMap id="DepartmentMap" type="com.gx.utils.SelectVo">
+		<result column="departmentID" jdbcType="INTEGER" property="id" />
+		<result column="departmentName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectDepartment" resultMap="DepartmentMap">
+		SELECT * FROM tb_department
+		where tb_department.parentdepartmentID=0
+	</select>
+
+	<!-- 报名点 -->
+	<resultMap id="baomingMap" type="com.gx.utils.SelectVo">
+		<result column="registrationPointID" jdbcType="INTEGER" property="id" />
+		<result column="registrationPointName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectEnroll" resultMap="baomingMap">
+		SELECT * FROM tb_registrationPoint
+	</select>
+
+	<!-- 车型 -->
+	<resultMap id="modelCarMap" type="com.gx.utils.SelectVo">
+		<result column="modelID" jdbcType="INTEGER" property="id" />
+		<result column="modelName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectmodelCar" resultMap="modelCarMap">
+		SELECT * FROM tb_model
+	</select>
+
+	<!--报名班制-->
+	<resultMap id="classMap" type="com.gx.utils.SelectVo">
+		<result column="classID" jdbcType="INTEGER" property="id" />
+		<result column="className" jdbcType="VARCHAR" property="text" />
+		<result column="drivingmodel" jdbcType="VARCHAR" property="name" />
+	</resultMap>
+	<select id="selectClass" resultMap="classMap">
+		SELECT * FROM tb_class
+	</select>
+
+	<!--报名班制-->
+<!--	<resultMap id="classMap" type="com.gx.utils.SelectVo">
+		<result column="classID" jdbcType="INTEGER" property="id" />
+		<result column="className" jdbcType="VARCHAR" property="text" />
+
+	</resultMap>-->
+	<!--<select id="selectModelClass" resultMap="classMap">
+		SELECT * FROM tb_class
+	</select>-->
+
+	<!--证件类型-->
+	<resultMap id="CardTypeMap" type="com.gx.utils.SelectVo">
+		<result column="cardTypeID" jdbcType="INTEGER" property="id" />
+		<result column="cardType" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectCardType" resultMap="CardTypeMap">
+		SELECT * FROM tb_cardType
+	</select>
+
+	<!--招生来源-->
+	<resultMap id="sourceEnrollmentMap" type="com.gx.utils.SelectVo">
+		<result column="sourceEnrollmentID" jdbcType="INTEGER" property="id" />
+		<result column="sourceEnrollmentName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectregistrations" resultMap="sourceEnrollmentMap">
+		SELECT * FROM tb_sourceEnrollment
+	</select>
+
+	<!--业务类型-->
+	<resultMap id="businessTypeMap" type="com.gx.utils.SelectVo">
+		<result column="businessTypeID" jdbcType="INTEGER" property="id" />
+		<result column="businessType" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectbusinessType" resultMap="businessTypeMap">
+		SELECT * FROM tb_businessType
+	</select>
+
+	<!-- 付款类型 -->
+	<resultMap id="payMoneyMap" type="com.gx.utils.SelectVo">
+		<result column="paymentTypeID" jdbcType="INTEGER" property="id" />
+		<result column="paymentType" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectpayMoney" resultMap="payMoneyMap">
+		SELECT * FROM tb_paymenttype
+	</select>
+
+	<!-- 款项 -->
+	<resultMap id="fund" type="com.gx.utils.SelectVo">
+		<result column="fundID" jdbcType="INTEGER" property="id" />
+		<result column="fundType" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectfund" resultMap="fund">
+		SELECT * FROM tb_fund
+	</select>
+
+	<!-- 训练场 -->
+	<resultMap id="GroundName" type="com.gx.utils.SelectVo">
+		<result column="trainingGroundID" jdbcType="INTEGER" property="id" />
+		<result column="trainingGroundName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectGroundName" resultMap="GroundName">
+		SELECT * FROM tb_trainingGround
+	</select>
+
+	<!--教练-->
+	<resultMap id="Selectemployee" type="com.gx.utils.SelectVo">
+		<result column="employeeID" jdbcType="INTEGER" property="id" />
+		<result column="employeeName" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectemployee" resultMap="Selectemployee">
+		SELECT * FROM tb_employee
+		left join tb_coach on tb_coach.employeeID = tb_employee.employeeID
+		where workingBit = true and splitCarBit = true and coachBit = true
+	</select>
+
+	<!--缴费票号-->
+	<select id="selectTicket" resultType="com.gx.pojo.TbPaymoney">
+		SELECT pamoneyID from tb_paymoney ORDER BY pamoneyID DESC limit 0,1
+	</select>
+
+	<!--学号-->
+	<select id="selectNumbers" resultType="com.gx.pojo.TbStudent">
+		SELECT studentID from tb_student ORDER BY studentID DESC limit 0,1
+	</select>
+
+	<select id="selectregistrationid" resultType="int">
+		select registrationId from tb_registration where number =#{number}
+	</select>
+
+
+	<select id="SelectCoach" resultType="com.gx.pojo.TbClassification">
+		SELECT * FROM tb_classifiCation
+		left join tb_student   on  tb_classifiCation.studentID =tb_student.studentID
+		left join tb_subjects  on  tb_classifiCation.subjectID =tb_subjects.subjectID
+		left join tb_vehicle   on  tb_classifiCation.vehicleID =tb_vehicle.vehicleID
+	</select>
+
+<!--	查询缴费明细
+	<select id="SelectPay" resultType="com.gx.pojo.TbPaymentdetail">
+		SELECT * FROM tb_paymentDetail
+	</select>-->
+
+	<!--查询学员-->
+	<select id="selectStudent" resultType="com.gx.pojo.StudentManage">
+	  SELECT * FROM tb_student
+	  left join tb_model on tb_model.modelID = tb_student.modelID
+	  left join tb_trainingground on tb_student.trainingGroundID = tb_trainingGround.trainingGroundID
+	  left join tb_registration   on tb_student.registrationID = tb_registration.registrationID
+	  left join tb_registrationpoint on tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+	  left join tb_sourceenrollment  on tb_registration.sourceEnrollmentID = tb_sourceenrollment.sourceEnrollmentID
+	  left join tb_class          on tb_student.classID = tb_class.classID
+	  left join tb_department     on tb_class.departmentID = tb_department.departmentID
+	  left join tb_cardtype       on tb_student.cardTypeID = tb_cardtype.cardTypeID
+	  <where>
+		  and tb_student.studyState = "报名"
+		  <if test="RegistrationPoint != null and RegistrationPoint!=0" >
+			  AND  tb_registrationpoint.registrationPointID=#{RegistrationPoint}
+		  </if>
+		  <if test="Class != null and Class!=0" >
+			  AND  tb_class.classID=#{Class}
+		  </if>
+		  <if test="Model != null and Model!=0" >
+			  AND  tb_model.modelID=#{Model}
+		  </if>
+		  <if test="Department != null and Department!=0" >
+			  AND  tb_department.departmentID=#{Department}
+		  </if>
+		  <if test="NameCardPhone != null and NameCardPhone !='' ">
+			  and (tb_student.identityCard like concat('%',#{NameCardPhone},'%')
+			  or tb_student.phoneOne like concat('%',#{NameCardPhone},'%')
+			  or tb_student.phoneTwo like concat('%',#{SignUpName},'%')
+			  or tb_student.name like concat('%',#{NameCardPhone},'%'))
+		  </if>
+		  <if test="ReferralName != null and ReferralName !='' ">
+			  AND tb_registration.referralName like concat('%',#{ReferralName},'%')
+		  </if>
+		  <if test="Gender != null">
+			  AND tb_student.sex=#{Gender}
+		  </if>
+		  <if test="AgeStart != null and AgeEnd != null">
+			  AND tb_student.birthday between DATE_SUB(now(), interval #{AgeEnd} year) and DATE_SUB(now(), interval #{AgeStart} year)
+		  </if>
+	  </where>
+	  ORDER BY tb_student.studentID DESC
+	</select>
+
+	<!-- 查询款项 -->
+	<resultMap id="fundMap" type="com.gx.utils.SelectVo">
+		<result column="fundid" jdbcType="INTEGER" property="id" />
+		<result column="fundtype" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectFund" resultMap="fundMap">
+		SELECT * FROM tb_fund
+	</select>
+
+	<!-- 查询付款类型 -->
+	<resultMap id="paymentTypeMap" type="com.gx.utils.SelectVo">
+		<result column="paymenttypeid" jdbcType="INTEGER" property="id" />
+		<result column="paymenttype" jdbcType="VARCHAR" property="text" />
+	</resultMap>
+	<select id="selectPaymentType" resultMap="paymentTypeMap">
+		SELECT * FROM tb_paymentType
+	</select>
+
+	<!--根据付款类型id查询付款类型表-->
+	<select id="selectPaymenttype" resultType="com.gx.pojo.StudentManage">
+		SELECT * FROM tb_paymentType
+		where tb_paymentType.paymentTypeID = #{Selectid}
+	</select>
+
+	<!--查询班级费用信息-->
+	<select id="selectclassCost" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_classCost.*, tb_fund.* FROM tb_class
+		left join tb_classCost on tb_class.classID =tb_classCost.classID
+		left join tb_fund on tb_classCost.fundID = tb_fund.fundID
+		where tb_class.classID = #{classID}
+	</select>
+
+	<!--新增报名表-->
+	<insert id="insertRegistration" parameterType="com.gx.pojo.StudentManage">
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="registrationid">
+			select LAST_INSERT_ID() AS id
+		</selectKey>
+		insert into tb_registration(registrationPointID,sourceEnrollmentID,businessTypeID,
+		ordDrivingModelID,ordDrivingNumber,referralName,registrationTime,materialsBit,registrationBit)
+
+		values (#{registrationpointid},#{sourceenrollmentid},#{businesstypeid},
+		#{orddrivingmodelid},#{ordDrivingnumber},#{referralname},#{registrationtime},#{materialsbit},1)
+	</insert>
+
+	<!--新增学员-->
+	<insert id="insertStudent" parameterType="com.gx.pojo.StudentManage">
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="studentid">
+			select LAST_INSERT_ID() AS id
+		</selectKey>
+		insert into tb_student(classID,modelID,cardTypeID,employeeID,trainingGroundID,registrationID,
+		name,sex,healthID,interviewID,acceptanceID,nationality,identityCard,IdCardValidityDate,birthday,studyState,
+		phoneOne,phoneTwo,photograph,IdCardAddress,residentialAddress,numbers,remarks)
+
+		values (#{classid},#{modelid},#{cardtypeid},#{employeeid},#{traininggroundid},#{registrationid},
+		#{name},#{sex},0,0,0,#{nationality},#{identitycard},#{idcardvaliditydate},#{birthday},"报名",
+		#{phoneone},#{phonetwo},#{photograph},#{idcardaddress},#{residentialaddress},#{numbers},#{remarks})
+	</insert>
+
+	<!--新增缴费表-->
+	<insert id="insertPaymoney" parameterType="com.gx.pojo.StudentManage">
+		<selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="pamoneyid">
+			select LAST_INSERT_ID() AS id
+		</selectKey>
+		insert into tb_paymoney(studentID,ticketNumber)
+		values (#{studentid},#{ticketnumber})
+	</insert>
+
+	<!--新增缴费明细表-->
+	<insert id="insertPaymentDetail" parameterType="com.gx.pojo.StudentManage">
+		insert into tb_paymentdetail(paymentTypeID,userID,fundID,classID,pamoneyID,requiredAmount,paymentAmount,arrearsmount,
+		preferentialAmount,preferences,preferentialStatus,paymentTime,paymentRemarks,entryType,entryBit)
+
+		values (#{paymenttypeid},#{userid},#{fundid},#{classid},#{pamoneyid},#{requiredamount},#{paymentamount},#{arrearsmount},
+		#{preferentialamount},#{preferences},#{preferentialstatus},now(),#{paymentremarks},1,0)
+	</insert>
+
+	<!--根据学生ID回填学生数据-->
+	<select id="backfillStudent" resultType="com.gx.pojo.StudentManage">
+        SELECT * FROM tb_student
+        left join tb_paymoney on tb_paymoney.studentID = tb_student.studentID
+        left join tb_class on tb_class.classID = tb_student.classID
+		left join tb_registration on tb_student.registrationID = tb_registration.registrationID
+		where tb_student.studentID = #{studentID}
+    </select>
+
+	<!--根据学生ID、班级ID查询缴费明细-->
+	<select id="selectPaymentdetail" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_paymentdetail.*,tb_fund.fundType,tb_paymenttype.paymentType FROM tb_student
+		left join tb_paymoney on tb_paymoney.studentID = tb_student.studentID
+		left join tb_paymentdetail on tb_paymentdetail.pamoneyID = tb_paymoney.pamoneyID
+		left join tb_fund on tb_paymentdetail.fundID = tb_fund.fundID
+		left join tb_paymenttype on tb_paymenttype.paymentTypeID = tb_paymentdetail.paymentTypeID
+		<where>
+			and tb_student.studentID = #{studentID}
+			<if test="classID != 0">
+				and tb_paymentdetail.classID=#{classID}
+			</if>
+			<if test="Status != ''">
+				and tb_paymentdetail.preferentialStatus >= 0
+			</if>
+		</where>
+    </select>
+
+	<!--修改报名表-->
+	<update id="updateRegistration" parameterType="com.gx.pojo.StudentManage">
+		update tb_registration set registrationPointID=#{registrationpointid},sourceEnrollmentID=#{sourceenrollmentid},
+	    businessTypeID=#{businesstypeid},ordDrivingModelID=#{orddrivingmodelid},ordDrivingNumber=#{ordDrivingnumber},
+		referralName=#{referralname},registrationTime=#{registrationtime},materialsBit=#{materialsbit}
+		where tb_registration.registrationID=#{registrationid}
+	</update>
+
+	<!--修改学员-->
+	<update id="updateStudent" parameterType="com.gx.pojo.StudentManage">
+		update tb_student
+		<set>
+			cardTypeID=#{cardtypeid},employeeID=#{employeeid},trainingGroundID=#{traininggroundid},
+			registrationID=#{registrationid},name=#{name},sex=#{sex},nationality=#{nationality},identityCard=#{identitycard},
+			IdCardValidityDate=#{idcardvaliditydate},birthday=#{birthday},phoneOne=#{phoneone},phoneTwo=#{phonetwo},
+			<if test="photograph != null">
+				photograph=#{photograph},
+			</if>
+			IdCardAddress=#{idcardaddress},residentialAddress=#{residentialaddress},numbers=#{numbers},remarks=#{remarks}
+		</set>
+		where tb_student.studentID=#{studentid}
+	</update>
+
+	<!--needPaymentTotalMoney=#{needpaymenttotalmoney},paymentTotalMoney=#{paymenttotalmoney},discountTotalMoney=#{discounttotalmoney}-->
+	<!--修改缴费表-->
+	<update id="updatePaymoney" parameterType="com.gx.pojo.StudentManage">
+		update tb_paymoney set studentID=#{studentid},ticketNumber=#{ticketnumber}
+		where tb_paymoney.pamoneyID=#{pamoneyid}
+	</update>
+
+	<!--修改缴费明细表-->
+	<update id="updatePaymentDetail" parameterType="com.gx.pojo.StudentManage">
+		update tb_paymentdetail set paymentTypeID=#{paymenttypeid},userID=#{userid},fundID=#{fundid},pamoneyID=#{pamoneyid},
+		requiredAmount=#{requiredamount},paymentAmount=#{paymentamount},arrearsmount=#{arrearsmount},preferentialAmount=#{preferentialamount},
+		preferentialStatus=#{preferentialstatus},preferences=#{preferences},paymentTime=#{paymenttime},paymentRemarks=#{paymentremarks}
+		where tb_paymentdetail.paymentdetailID=#{paymentdetailid}
+	</update>
+
+	<!--删除报名表-->
+	<delete id="deleteRegistration" parameterType="java.lang.Integer">
+        delete from tb_registration
+        where tb_registration.registrationID=#{registrationID}
+    </delete>
+
+	<!--删除学员-->
+	<delete id="deleteStudent">
+		delete from tb_student
+		where tb_student.studentID=#{studentID}
+	</delete>
+
+	<!--删除缴费表-->
+	<delete id="deletePaymoney">
+		delete from tb_paymoney
+		where tb_paymoney.pamoneyID=#{pamoneyID}
+	</delete>
+
+	<!--删除缴费明细表-->
+	<delete id="deletePaymentDetail">
+		delete from tb_paymentdetail
+		where tb_paymentdetail.paymentdetailID=#{paymentdetailID}
+	</delete>
+
+	<!-- //===============================================换班管理==============================================// -->
+
+	<!--申请表最后一条数据ID-->
+	<select id="selectApplication" resultType="com.gx.pojo.TbApplication">
+		SELECT introducer from tb_application where tb_application.applicationType=#{SMState} ORDER BY introducer DESC limit 0,1
+	</select>
+
+	<!-- 换班、五次不过、退学管理多条件查询 -->
+	<select id="selManageByPage" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_application.*,tb_model.*,tb_class.*,tb_registration.*,tb_registrationpoint.*,tb_department.*,
+		tb_student.studentID,tb_student.name,tb_student.identityCard,tb_student.phoneOne,tb_student.studyState,
+		ordmodel.modelID as ordmodelid,ordmodel.modelName as ordmodelname,
+		ordclass.classID as ordclassid,ordclass.className as ordclassname
+		FROM tb_application
+		left join tb_student on tb_student.studentID = tb_application.studentID
+		left join tb_registration on tb_student.registrationID = tb_registration.registrationID
+		left join tb_registrationpoint on tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+
+		left join tb_model on tb_model.modelID = tb_application.modelID
+		left join tb_class on tb_class.classID = tb_application.classID
+		left join tb_model as ordmodel on ordmodel.modelID = tb_application.ordmodelID
+		left join tb_class as ordclass on ordclass.classID = tb_application.ordclassID
+		left join tb_department on tb_class.departmentID = tb_department.departmentID
+		<where>
+		    and tb_application.applicationType = 1
+			<if test="SignUpName != null and SignUpName != '' ">
+				and (tb_student.name like concat('%',#{SignUpName},'%')
+				or tb_student.identityCard like concat('%',#{SignUpName},'%')
+				or tb_student.phoneOne like concat('%',#{SignUpName},'%')
+				or tb_student.phoneTwo like concat('%',#{SignUpName},'%'))
+			</if>
+			<if test="DateBegin != null and DateFinish != null">
+				and tb_application.applicationTime between #{DateBegin} and #{DateFinish}
+			</if>
+			<if test="NamePointID != 0">
+				and tb_registrationpoint.RegistrationPointID = #{NamePointID}
+			</if>
+			<if test="DepartmentID != 0">
+				and  tb_department.departmentID=#{DepartmentID}
+			</if>
+			<if test="SMState != null">
+				and tb_application.applicationType = #{SMState}
+			</if>
+			<if test="SMAudit != null">
+				and tb_application.applicationStatus = #{SMAudit}
+			</if>
+			<if test="arrearage != '' and arrearage == 'true'">
+		    	and tb_application.applicationmoney > 0
+			</if>
+			<if test="arrearage != '' and arrearage == 'false'">
+				and tb_application.applicationmoney = 0
+			</if>
+		</where>
+	</select>
+
+	<!-- 根据证件号查询学员信息 -->
+	<select id="selStudentByIdCard" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_student.studentID,tb_student.name,tb_student.identityCard,tb_student.phoneOne,tb_student.studyState,tb_student.classID,
+		tb_registration.*,tb_registrationpoint.registrationPointName,tb_model.*,tb_class.*,tb_paymoney.pamoneyID
+		FROM tb_student
+		left join tb_registration on tb_student.registrationID = tb_registration.registrationID
+		left join tb_registrationpoint on tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+		left join tb_model on tb_model.modelID = tb_student.modelID
+		left join tb_class on tb_class.classID = tb_student.classID
+		left join tb_paymoney on tb_paymoney.studentID = tb_student.studentID
+		<where>
+		    <if test="IdNumber != ''">
+				and tb_student.identityCard=#{IdNumber}
+			</if>
+			<if test="studentID != 0">
+				and tb_student.studentID=#{studentID}
+			</if>
+
+			<!--<if test="StuState == '退学'">
+				and tb_student.studyState = "退学"
+			</if>
+			<if test="StuState == '五次不过'">
+				and (tb_student.studyState = "科一挂科"
+				or tb_student.studyState = "科二挂科"
+				or tb_student.studyState = "科三挂科"
+				or tb_student.studyState = "科四挂科")
+			</if>-->
+		</where>
+	</select>
+
+	<!-- 根据学员ID查询学员费用明细信息 -->
+	<!--<select id="selPayDetailByID" resultType="com.gx.pojo.StudentManage">
+		select tb_student.studentID, tb_paymoney.pamoneyID,tb_paymentdetail.*,tb_fund.*,tb_paymenttype.*
+		from tb_student
+		left join tb_paymoney on tb_paymoney.studentID = tb_student.studentID
+		left join tb_paymentdetail on tb_paymentdetail.pamoneyID = tb_paymoney.pamoneyID
+		left join tb_fund on tb_fund.fundID = tb_paymentdetail.fundID
+		left join tb_paymenttype on tb_paymenttype.paymentTypeID = tb_paymentdetail.paymentTypeID
+		where tb_student.studentID=#{StudentsID}
+	</select>-->
+
+	<!--根据原班级ID查询班级费用明细表-->
+	<select id="selClassCostByclassid" resultType="com.gx.pojo.TbClasscost">
+		SELECT * FROM tb_classcost
+		WHERE classID = #{classID}
+	</select>
+
+	<!--修改缴费明细表审核状态-->
+	<!--<update id="updatePaymentDetail" parameterType="com.gx.pojo.StudentManage">
+		update tb_paymentdetail
+		<set>
+			<if test="preferentialstatus !=null">
+		   		preferentialStatus=#{preferentialstatus}
+			</if>
+		</set>
+		where tb_paymentdetail.paymentdetailID=#{paymentdetailid}
+	</update>-->
+
+	<!--修改缴费明细表优惠状态-->
+	<update id="updatePayDetailStatus" parameterType="java.lang.Integer">
+		update tb_paymentdetail set tb_paymentdetail.preferentialStatus = #{preferentialStatus}
+		WHERE paymentdetailID = #{paymentdetailID}
+	</update>
+
+	<!--修改申请表优惠状态-->
+	<update id="updateAppStatus" parameterType="java.lang.Integer">
+		update tb_application set applicationStatus=#{applicationstatus},userID =#{userID}
+		WHERE applicationID=#{applicationID}
+	</update>
+
+	<!--修改学生表的班级、车型-->
+	<update id="updateStudentClassModel" parameterType="java.lang.Integer">
+		update tb_student set classID=#{classID},modelID=#{modelID}
+		where studentID=#{studenID}
+	</update>
+
+	<!--新增申请表-->
+	<insert id="insertApplication" parameterType="com.gx.pojo.StudentManage">
+		INSERT INTO tb_application(studentID,modelID,classID,paymentTypeID,userID,introducer,applicationTime,applicationmoney,
+			applicationReason,applicationType,applicationreferral,applicationStatus,ordmodelID,ordclassID)
+
+		VALUES(#{studentid},#{modelid},#{classid},#{paymenttypeid},#{userid},#{introducer},now(),#{applicationmoney},
+			#{applicationreason},#{applicationtype},#{applicationreferral},0,#{ordmodelid},#{ordclassid})
+	</insert>
+
+	<!--根据学生ID查询缴费表-->
+	<select id="selPayByStudentid" resultType="com.gx.pojo.TbPaymoney">
+		select * from tb_paymoney
+		where tb_paymoney.studentID = #{StudenID}
+	</select>
+
+	<!-- 根据学员ID，回填换班申请最后一条信息 -->
+	<select id="backfillapplication" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_application.*,tb_model.*,tb_class.*,tb_paymenttype.*,
+		ordmodel.modelID as ordmodelid,ordmodel.modelName as ordmodelname,
+		ordclass.classID as ordclassid,ordclass.className as ordclassname
+		FROM tb_student
+		left join tb_application on tb_application.studentID = tb_student.studentID
+		left join tb_paymenttype on tb_paymenttype.paymentTypeID = tb_paymenttype.paymentTypeID
+		left join tb_model on tb_model.modelID = tb_application.modelID
+		left join tb_class on tb_class.classID = tb_application.classID
+		left join tb_model as ordmodel on ordmodel.modelID = tb_application.ordmodelID
+		left join tb_class as ordclass on ordclass.classID = tb_application.ordclassID
+		WHERE tb_student.studentID = #{StudentID} and tb_application.applicationType=1
+        ORDER BY introducer DESC limit 0,1
+	</select>
+
+	<!--查询申请信息-->
+	<select id="SelApplication" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_application.*,tb_student.name,tb_model.*,tb_class.*,
+		tb_student.identityCard,tb_student.phoneOne,tb_student.studyState,tb_user.userName,
+		ordmodel.modelID as ordmodelid,ordmodel.modelName as ordmodelname,
+		ordclass.classID as ordclassid,ordclass.className as ordclassname
+		FROM tb_application
+		LEFT JOIN tb_student ON tb_student.studentID = tb_application.studentID
+		LEFT JOIN tb_user ON tb_user.userID = tb_application.userID
+		left join tb_model on tb_model.modelID = tb_application.modelID
+		left join tb_class on tb_class.classID = tb_application.classID
+		left join tb_model as ordmodel on ordmodel.modelID = tb_application.ordmodelID
+		left join tb_class as ordclass on ordclass.classID = tb_application.ordclassID
+		WHERE applicationID = #{ApplicationID}
+	</select>
+
+	<!-- //=============================================优惠管理==============================================// -->
+
+	<!--查询全部优惠信息 <(&lt;) >(&gt;) &(&amp;) '(&apos;) "(&quot;)-->
+	<select id="selectPreferentialStatus" resultType="com.gx.pojo.StudentManage">
+		SELECT tb_paymoney.studentID,tb_student.name,tb_student.identityCard,tb_student.phoneOne,tb_student.phoneTwo,tb_student.studyState,
+		(select CONCAT(tb_model.modelName,"-",tb_class.className)) as modelclass,tb_department.departmentID,tb_department.departmentName,
+		tb_registrationpoint.RegistrationPointID,tb_registration.registrationTime,tb_registrationpoint.registrationPointName,e.paymentTime,
+		(SELECT sum(d.requiredAmount) FROM tb_paymentdetail d WHERE d.pamoneyID = e.pamoneyID) as needpaymenttotalmoney,
+		(SELECT sum(d.paymentAmount) FROM tb_paymentdetail d WHERE d.pamoneyID = e.pamoneyID) as paymenttotalmoney,
+		(SELECT sum(d.preferentialAmount) FROM tb_paymentdetail d WHERE d.pamoneyID = e.pamoneyID and d.preferentialStatus &lt;= 1) as discounttotalmoney,
+		(SELECT sum(d.preferentialAmount) FROM tb_paymentdetail d WHERE d.pamoneyID = e.pamoneyID and d.preferentialStatus=2) as arrearagemoney,
+		(SELECT sum(d.classCostMoney) FROM tb_classcost d WHERE d.classID = tb_student.classID) as classcostmoney
+		FROM tb_paymentdetail as e
+		LEFT JOIN tb_paymoney ON  tb_paymoney.pamoneyID = e.pamoneyID
+		LEFT JOIN tb_student ON tb_student.studentID = tb_paymoney.studentID
+		LEFT JOIN tb_model on tb_model.modelID = tb_student.modelID
+		LEFT JOIN tb_class on tb_class.classID = tb_student.classID
+		LEFT JOIN tb_registration on tb_student.registrationID = tb_registration.registrationID
+		LEFT JOIN tb_registrationpoint on tb_registration.registrationPointID = tb_registrationpoint.registrationPointID
+		LEFT JOIN tb_department on tb_class.departmentID = tb_department.departmentID
+		LEFT JOIN tb_classcost on tb_classcost.classID = tb_student.classID
+		<where>
+		    and e.preferentialStatus >= 0 and tb_student.classID = e.classID
+			<if test="SignUpName != null and SignUpName != '' ">
+				and (tb_student.name like concat('%',#{SignUpName},'%')
+				or tb_student.identityCard like concat('%',#{SignUpName},'%')
+				or tb_student.phoneOne like concat('%',#{SignUpName},'%')
+				or tb_student.phoneTwo like concat('%',#{SignUpName},'%'))
+			</if>
+			<if test="DateBegin != null and DateFinish != null">
+				and e.paymentTime between #{DateBegin} and #{DateFinish}
+			</if>
+			<if test="NamePointID != 0">
+				and tb_registrationpoint.RegistrationPointID = #{NamePointID}
+			</if>
+			<if test="DepartmentID != 0">
+				and  tb_department.departmentID=#{DepartmentID}
+			</if>
+			<if test="Audit != ''">
+				and e.preferentialStatus = #{Audit}
+			</if>
+		</where>
+		GROUP BY e.pamoneyID
+		ORDER BY e.paymentTime DESC
+	</select>
+
+	<!--修改缴费明细表状态-->
+	<update id="updatepreferential" parameterType="java.lang.Integer">
+		update tb_paymentdetail set preferentialStatus=#{Audit}
+		where paymentdetailID=#{payDetailID}
+	</update>
+
+
+</mapper>

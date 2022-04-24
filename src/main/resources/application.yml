@@ -1,0 +1,67 @@
+#配置jdbc连接池，用jdbcConfig读取
+#jdbc:
+#  driverClassName: com.mysql.jdbc.Driver
+#  url: jdbc:mysql://localhost:3306/driving
+#  username: root
+#  password: root
+
+# 激活配置文件；需要指定其他的配置文件的名称
+spring:
+  #profiles:
+  #active: abc,def
+  #springboot整合事务和连接池，配置好之后就不再使用上面来自jdbc连接池的配置项
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/driving
+    username: root
+    password: root
+    #type: com.alibaba.druid.pool.DruidDataSource
+  #springboot整合redis
+  redis:
+    host: localhost
+    port: 6379
+  mvc:
+    view:
+      prefix: /jsp/
+      suffix: .jsp
+  servlet:
+    multipart:
+      #不限制文件上传的大小，那么就把两个值都设置为-1
+      #设置单个文件的大小
+     max-file-size: 10MB
+      #设置单次请求的文件的总大小
+     max-request-size: 10MB
+
+# tomcat端口
+server:
+  port: 8070
+  # jsp热部署
+  servlet:
+    jsp:
+      init-parameters:
+        development: true
+  # 修改服务器大小（回填图片用到）
+  max-http-header-size: 102400
+
+
+# 日志记录级别
+logging:
+  level:
+    com.gx: debug
+    org.springframework: info
+
+
+# 配置mybatis
+mybatis:
+  # 实体类别名包路径
+  type-aliases-package: com.gx.pojo
+  # 映射文件路径
+#  mapper-locations: classpath:com.gx.mapper/*.xml
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+
+
+
+
